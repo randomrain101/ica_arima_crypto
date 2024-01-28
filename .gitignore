@@ -1,0 +1,6 @@
+__pycache__
+backtest.py
+*.csv
+*.joblib
+notebooks_old
+__pycache__
