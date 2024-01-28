@@ -4,3 +4,10 @@ backtest.py
 *.joblib
 notebooks_old
 __pycache__
+
+!/data/ica_arma_predictions_24h_120D.csv
+!/data/arma_predictions_24h_120D.csv
+
+!/data/ica_roots.joblib
+!/data/ica_arma_orders_24h_120D.csv
+!/data/arma_orders_24h_120D.csv

@@ -80,9 +80,10 @@ def objective(trial: optuna.Trial):
     
 # %%
 tick = "15m"
+ex = "gateio"
 
 df_bars = pd.read_csv(
-    f"../data/ohlc_{tick}_gateio.csv", index_col=0, parse_dates=True)
+    f"../data/ohlc_{tick}_{ex}.csv", index_col=0, parse_dates=True)
 df_close = df_bars.filter(axis="columns", like="close")
 df_close.columns = [x.split("_")[0] for x in df_close.columns]
 

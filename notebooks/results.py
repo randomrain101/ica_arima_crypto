@@ -44,21 +44,6 @@ df_ret = df_close.pct_change().fillna(0).reindex(df_arma_pred.index)
 
 # %%
 #
-# --- fitted arima orders ---
-#
-ica_orders = pd.read_csv(f"../data/ica_arma_orders_{tick}_{n_train_days}D.csv", index_col=0)
-arima_orders = pd.read_csv(f"../data/arma_orders_{tick}_{n_train_days}D.csv", index_col=0)
-orders = pd.concat((
-    ica_orders.unstack().value_counts().rename("ica_arima_orders"),
-    arima_orders.unstack().value_counts().rename("arima_orders")
-    ), axis=1, join="inner")
-
-orders.iloc[np.argsort(orders.sum(axis=1))[:-30:-1]].plot.bar(figsize=(15, 5))
-plt.xlabel("ARIMA order (p, d, q)")
-plt.ylabel("count")
-
-# %%
-#
 # --- Mean Absolute Error ---
 #
 ttest_ind(

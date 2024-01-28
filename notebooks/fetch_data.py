@@ -10,22 +10,20 @@ import matplotlib.pyplot as plt
 warnings.filterwarnings("ignore")
 
 # %%
-#ex = ccxt.gateio()
-ex = ccxt.okx()
+ex = ccxt.gateio()
 
 # %%
 def to_unix(x, dt="1ms"):
     return (x - pd.Timestamp("1970-01-01", tz="UTC")) // pd.Timedelta(dt)
 
-
 def fetch_ohlc(symbol, length=pd.Timedelta("356 days"), timeframe="15m"):
     out = []
     # okx api -> -8 hours from UTC to Hong Kong Time
-    now = pd.Timestamp.utcnow().round(pd.Timedelta(timeframe)) - pd.Timedelta("8 hours")
+    now = pd.Timestamp.utcnow().round(pd.Timedelta(timeframe))# - pd.Timedelta("8 hours")
     last = now - length
     df = pd.DataFrame()
     print("fetching", symbol)
-    while now - last > (pd.Timedelta(timeframe) / 2):
+    while now - last > (2*pd.Timedelta(timeframe)):
         x = ex.fetch_ohlcv(symbol, timeframe, limit=1500, since=to_unix(last, "1ms"))
         df = pd.DataFrame(
             x, columns=["timestamp", "open", "high", "low", "close", "volume"])
@@ -43,8 +41,8 @@ def fetch_ohlc(symbol, length=pd.Timedelta("356 days"), timeframe="15m"):
 
 # %%
 # fetch data
-tick = "15m"
-length = pd.Timedelta(f"{0.1*356} days")
+tick = "12h"
+length = pd.Timedelta(f"{6*356} days")
 symbols = list(
     map(lambda x: x + "/USDT", ["BTC", "ETH", "SOL", "XRP", "LTC", "LINK", "ADA", "DOGE", "TRX", "DOT", "BCH", "XMR", "EOS", "XLM"]))
 df_list = []
@@ -57,6 +55,7 @@ for symbol in tqdm(symbols[::-1]):
 # %%
 df = pd.concat([x.loc[~x.index.duplicated(keep="first")]
                for x in df_list[::-1]], axis=1).iloc[1:-1].dropna(axis=1)
-df.to_csv(f"../data/ohlc_{tick}_{ex.__class__.__name__}.csv")
+#df.filter(like="close", axis="columns").plot()
 
 # %%
+df.to_csv(f"../data/ohlc_{tick}_{ex.__class__.__name__}.csv")

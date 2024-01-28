@@ -7,6 +7,25 @@ from joblib import dump, load
 ica_roots = load("../data/ica_roots.joblib")
 arima_roots = load("../data/arima_roots.joblib")
 
+
+# %%
+#
+# --- fitted arima orders ---
+#
+n_train_days = 120
+tick = "24h"
+ica_orders = pd.read_csv(f"../data/ica_arma_orders_{tick}_{n_train_days}D.csv", index_col=0)
+arima_orders = pd.read_csv(f"../data/arma_orders_{tick}_{n_train_days}D.csv", index_col=0)
+orders = pd.concat((
+    ica_orders.unstack().value_counts().rename("ica_arima_orders"),
+    arima_orders.unstack().value_counts().rename("arima_orders")
+    ), axis=1, join="inner")
+
+orders.iloc[np.argsort(orders.sum(axis=1))[:-30:-1]].plot.bar(figsize=(15, 5))
+plt.xlabel("ARIMA order (p, d, q)")
+plt.ylabel("count")
+
+
 # %%
 ar_roots_ica = pd.DataFrame(ica_roots).applymap(lambda x: x[0]).unstack().explode()**-1
 ar_roots_ica = pd.DataFrame({
