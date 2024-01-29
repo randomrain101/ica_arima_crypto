@@ -34,7 +34,7 @@ n_test = 2
 df_temp = df_close.loc["2019-01":"2019-04"]
 sc = StandardScaler().fit(df_temp.iloc[:-n_test-1])
 df_close_norm = pd.DataFrame(sc.transform(df_temp.iloc[:-n_test-1]), index=df_temp.index[:-n_test-1], columns=df_temp.columns)
-ica = FastICA(max_iter=5000, algorithm="deflation").fit(df_close_norm)
+ica = FastICA(max_iter=5000, algorithm="deflation", fun="exp").fit(df_close_norm)
 
 #%%
 df_components = pd.DataFrame(ica.components_, index=df_close.columns)
