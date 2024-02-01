@@ -41,7 +41,7 @@ def fetch_ohlc(symbol, length=pd.Timedelta("356 days"), timeframe="15m"):
 
 # %%
 # fetch data
-tick = "12h"
+tick = "1d"
 length = pd.Timedelta(f"{6*356} days")
 symbols = list(
     map(lambda x: x + "/USDT", ["BTC", "ETH", "SOL", "XRP", "LTC", "LINK", "ADA", "DOGE", "TRX", "DOT", "BCH", "XMR", "EOS", "XLM"]))
