@@ -53,7 +53,7 @@ df_close = df_bars.filter(axis="columns", like="close")
 df_close.columns = [x.split("_")[0] for x in df_close.columns]
 
 tick = "24h"
-df_close = df_close.resample(tick).last()
+df_close = df_close.resample(tick).last().iloc[2*356:]
 
 # %%
 # walk forward split

@@ -69,7 +69,7 @@ df_close = df_bars.filter(axis="columns", like="close")
 df_close.columns = [x.split("_")[0] for x in df_close.columns]
 
 tick = "24h"
-df_close = df_close.resample(tick).last()
+df_close = df_close.resample(tick).last().iloc[2*356:]
 
 # %%
 # walk forward split
@@ -77,13 +77,14 @@ n_train_days = 120
 ts_split = list(TimeSeriesSplit(
     len(df_close) - n_train_days, 
     max_train_size=n_train_days, 
-    test_size=1).split(df_close))[356:]
+    test_size=1).split(df_close))
 
 #%%
 ica_kwargs = {
         "fun": "exp",
-        "max_iter": 5000
+        "max_iter": 1000
     }
+
 
 #%%
 ica_arma_predictions, ica_orders, ica_roots, ica_list = zip(*Parallel(n_jobs=-1, backend="loky")(

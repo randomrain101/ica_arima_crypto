@@ -53,9 +53,14 @@ def fit_predict_ica_arima(X, n_periods=1, standard_order=(2, 0, 0), ica_kwargs={
     return pd.DataFrame(out, index=pred_list[0].index, columns=X.columns)
 
 def objective(trial: optuna.Trial):
+    n_train_days = int(trial.suggest_discrete_uniform("n_train_days", 60, 180, 60))
+    ts_split = list(TimeSeriesSplit(
+        len(df_close) - n_train_days, 
+        max_train_size=n_train_days, 
+        test_size=1).split(df_close))[180-n_train_days:]
     ica_kwargs = {
         "fun": trial.suggest_categorical("fun", ["logcosh", "exp", "cube"]),
-        "max_iter": trial.suggest_int("max_iter", 200, 5000, 100)
+        "max_iter": trial.suggest_int("max_iter", 200, 2000, 200)
     }
 
     ica_arma_predictions = Parallel(n_jobs=-1, backend="loky")(
@@ -66,16 +71,7 @@ def objective(trial: optuna.Trial):
 
     df_ret = df_close.reindex(df_ica_pred.index).pct_change().fillna(0)
 
-    random = np.where(np.random.binomial(1, 0.5, df_ret.shape) == 0, -1, 1)
-    df_dacc = pd.DataFrame(
-        {
-            "ica_arma": (np.sign(df_ret) == np.sign((df_ica_pred))).resample("60D").sum().unstack(),
-            "random": (np.sign(df_ret) == random).resample("60D").sum().unstack()
-        }
-    )
-    df_dacc = df_dacc.divide(df_ret.resample("60D").count().unstack().values, axis=0)
-
-    return df_dacc["ica_arma"].mean()
+    return (np.sign(df_ret) == np.sign((df_ica_pred))).unstack().mean()
 
     
 # %%
@@ -88,16 +84,11 @@ df_close = df_bars.filter(axis="columns", like="close")
 df_close.columns = [x.split("_")[0] for x in df_close.columns]
 
 tick = "24h"
-df_close = df_close.resample(tick).last()
+# use first 2 years for cv
+df_close = df_close.resample(tick).last().iloc[:2*356]
 
 # %%
 # walk forward split
-n_train_days = 120
-ts_split = list(TimeSeriesSplit(
-    len(df_close) - n_train_days, 
-    max_train_size=n_train_days, 
-    test_size=1).split(df_close))[:356]
-
 study = optuna.create_study(
         storage="sqlite:////home/oliver/mtrade/data/optuna.db",
         direction="maximize",

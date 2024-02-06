@@ -8,6 +8,8 @@ import pandas as pd
 from scipy.stats import ttest_1samp, ttest_ind
 from scipy.stats import pearsonr
 
+
+# git clone https://github.com/jeslago/epftoolbox.git && cd epftoolbox && pip install .
 from  epftoolbox.evaluation import DM
 
 
@@ -47,63 +49,79 @@ df_ret = df_close.pct_change().fillna(0).loc[df_arma_pred.index, df_arma_pred.co
 df_ica_pred = df_ica_pred.unstack()
 df_arma_pred = df_arma_pred.unstack()
 
-# %%
-#
-# --- Mean Absolute Error ---
-#
-ttest_ind(
-    (df_ica_pred - df_ret).abs().values, 
-    (df_arma_pred - df_ret).abs().values,
-    alternative="less")
 
-#%%
-DM(
-    df_ret.values.reshape(-1, 2),
-    df_arma_pred.values.reshape(-1, 2),
-    df_ica_pred.values.reshape(-1, 2),
-    norm=1,
-    version="multivariate")
+# %% [markdown]
+#  # Empirical Results
 
+#  ## R (Pearson Correlation)
+# - **Pearson Correlation** of ica_arima **better** than just arima
 
 # %%
-#
-# --- Mean Squared Error ---
-#
-ttest_ind((
-    (df_ret - df_ica_pred)**2).values,
-    ((df_ret - df_arma_pred)**2).abs().values,
-    alternative="less")
-
-#%%
-DM(
-    df_ret.values.reshape(-1, 2),
-    df_arma_pred.values.reshape(-1, 2),
-    df_ica_pred.values.reshape(-1, 2),
-    norm=2,
-    version="multivariate")
-
-# %%
-#
-# --- R (Pearson Correlation) ---
-#
 pearsonr(df_ret, df_ica_pred, alternative="greater"), \
     pearsonr(df_ret, df_arma_pred, alternative="greater")
 
-# %%
-#
-# --- directional accuracy (correct sign of returns was predicted) ---
-#
-ttest_ind(
-    (np.sign(df_ret) == np.sign(df_ica_pred)),
-    (np.sign(df_ret) == np.sign(df_arma_pred)),
-    alternative="greater")
+
+# %% [markdown]
+# ## Directional accuracy
+# - Diebold Mariano test shows **Directional Accuarcy** (correct sign of returns predicted) for ica_arima significantly **better** than arima
 
 #%%
+print("Diebold Mariano p-value:",
 DM(
     np.sign(df_ret).values.reshape(-1, 2),
     np.sign(df_arma_pred).values.reshape(-1, 2),
     np.sign(df_ica_pred).values.reshape(-1, 2),
     norm=1,
-    version="multivariate")
+    version="multivariate"))
+
+
+# %% [markdown]
+# ## Mean Absolute Error
+# - Diebold Mariano test shows **Mean Absolute Error** of ica_arima predicitons significantly **worse** than arima
+
+# %%
+#%%
+print("Diebold Mariano p-value:",
+DM(
+    df_ret.values.reshape(-1, 2),
+    df_arma_pred.values.reshape(-1, 2),
+    df_ica_pred.values.reshape(-1, 2),
+    norm=1,
+    version="multivariate"))
+
+
+# %%
+# %% [markdown]
+# ## Mean Squared Error
+# - Diebold Mariano test shows **Mean Squared Error** of ica_arima predicitons significantly **worse** than arima
 
 #%%
+print("Diebold Mariano p-value:",
+DM(
+    df_ret.values.reshape(-1, 2),
+    df_arma_pred.values.reshape(-1, 2),
+    df_ica_pred.values.reshape(-1, 2),
+    norm=2,
+    version="multivariate"))
+
+# %% [markdown]
+# ## Comaparison of ARIMA orders
+# - for just ARIMA the AutoARIMA algorithm determined Brownian Noise with order (0, 1, 0) to be the best model of the process 
+# way more often than for ica + ARIMA, indicating application of ICA improved the Signal to Noise Ratio
+
+
+#%%
+ttest_ind(
+    (np.sign(df_ret) == np.sign(df_ica_pred)),
+    (np.sign(df_ret) == np.sign(df_arma_pred)),
+    alternative="greater")
+
+ttest_ind((
+    (df_ret - df_ica_pred)**2).values,
+    ((df_ret - df_arma_pred)**2).abs().values,
+    alternative="less")
+
+ttest_ind(
+    (df_ica_pred - df_ret).abs().values, 
+    (df_arma_pred - df_ret).abs().values,
+    alternative="less")
