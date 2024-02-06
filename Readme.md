@@ -1,5 +1,5 @@
-  # Empirical Results
-  ## R (Pearson Correlation)
+  ## Empirical Results
+  ### R (Pearson Correlation)
  - **Pearson Correlation** of ica_arima **better** than just arima
 
 
@@ -16,8 +16,8 @@ pearsonr(df_ret, df_ica_pred, alternative="greater"), \
 
 
 
- ## Directional accuracy
- - Diebold Mariano test shows **Directional Accuracy** (correct sign of returns predicted) for ica_arima significantly **better** than arima
+ ### Directional accuracy
+ - Diebold Mariano test shows **Directional Accuarcy** (correct sign of returns predicted) for ica_arima significantly **better** than arima
 
 
 ```python
@@ -33,8 +33,8 @@ DM(
     Diebold Mariano p-value: 0.11904912161485659
 
 
- ## Mean Absolute Error
- - Diebold Mariano test shows **Mean Absolute Error** of ica_arima predictions significantly **worse** than arima
+ ### Mean Absolute Error
+ - Diebold Mariano test shows **Mean Absolute Error** of ica_arima predicitons significantly **worse** than arima
 
 
 ```python
@@ -50,8 +50,8 @@ DM(
     Diebold Mariano p-value: 1.0
 
 
- ## Mean Squared Error
- - Diebold Mariano test shows **Mean Squared Error** of ica_arima predictions significantly **worse** than arima
+ ### Mean Squared Error
+ - Diebold Mariano test shows **Mean Squared Error** of ica_arima predicitons significantly **worse** than arima
 
 
 ```python
@@ -67,11 +67,14 @@ DM(
     Diebold Mariano p-value: 1.0
 
 
- ## Comaparison of fitted ARIMA orders
+ ## Comaparison of ARIMA orders
  - for just ARIMA the AutoARIMA algorithm determined Brownian Noise with order (0, 1, 0) to be the best model of the process
  way more often than for ica + ARIMA, indicating application of ICA improved the Signal to Noise Ratio
-
     
 ![png](results_files/results_9_1.png)
     
 
+
+  ## Source paper
+ Oja, Erkki, Kimmo Kiviluoto, and Simona Malaroiu. "Independent component analysis for financial time series." Proceedings of the IEEE 2000 Adaptive Systems for Signal Processing, Communications, and Control Symposium (Cat. No. 00EX373). IEEE, 2000.
+ [doi.org/10.1109/ASSPCC.2000.882456](https://doi.org/10.1109/ASSPCC.2000.882456)

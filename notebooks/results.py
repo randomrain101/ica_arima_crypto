@@ -109,6 +109,26 @@ DM(
 # - for just ARIMA the AutoARIMA algorithm determined Brownian Noise with order (0, 1, 0) to be the best model of the process 
 # way more often than for ica + ARIMA, indicating application of ICA improved the Signal to Noise Ratio
 
+#%%
+n_train_days = 120
+tick = "24h"
+ica_orders = pd.read_csv(f"../data/ica_arma_orders_{tick}_{n_train_days}D.csv", index_col=0)
+arima_orders = pd.read_csv(f"../data/arma_orders_{tick}_{n_train_days}D.csv", index_col=0)
+orders = pd.concat((
+    ica_orders.unstack().value_counts().rename("ica_arima_orders"),
+    arima_orders.unstack().value_counts().rename("arima_orders")
+    ), axis=1, join="inner")
+
+orders.iloc[np.argsort(orders.sum(axis=1))[:-30:-1]].plot.bar(figsize=(15, 5))
+plt.xlabel("ARIMA order (p, d, q)")
+plt.ylabel("count")
+
+# %% [markdown]
+#  ### Source paper
+# Oja, Erkki, Kimmo Kiviluoto, and Simona Malaroiu. "Independent component analysis for financial time series." Proceedings of the IEEE 2000 Adaptive Systems for Signal Processing, Communications, and Control Symposium (Cat. No. 00EX373). IEEE, 2000.
+# [doi.org/10.1109/ASSPCC.2000.882456](https://doi.org/10.1109/ASSPCC.2000.882456)
+
+
 
 #%%
 ttest_ind(
@@ -125,3 +145,5 @@ ttest_ind(
     (df_ica_pred - df_ret).abs().values, 
     (df_arma_pred - df_ret).abs().values,
     alternative="less")
+
+#%%
