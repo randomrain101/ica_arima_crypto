@@ -1,3 +1,7 @@
+## Original paper
+ Oja, Erkki, Kimmo Kiviluoto, and Simona Malaroiu. "Independent component analysis for financial time series." Proceedings of the IEEE 2000 Adaptive Systems for Signal Processing, Communications, and Control Symposium (Cat. No. 00EX373). IEEE, 2000.
+ [doi.org/10.1109/ASSPCC.2000.882456](https://doi.org/10.1109/ASSPCC.2000.882456)
+
   ## Empirical Results
   ### R (Pearson Correlation)
  - **Pearson Correlation** of ica_arima **better** than just arima
@@ -73,8 +77,3 @@ DM(
     
 ![png](results_files/results_9_1.png)
     
-
-
-  ## Source paper
- Oja, Erkki, Kimmo Kiviluoto, and Simona Malaroiu. "Independent component analysis for financial time series." Proceedings of the IEEE 2000 Adaptive Systems for Signal Processing, Communications, and Control Symposium (Cat. No. 00EX373). IEEE, 2000.
- [doi.org/10.1109/ASSPCC.2000.882456](https://doi.org/10.1109/ASSPCC.2000.882456)
