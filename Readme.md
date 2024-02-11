@@ -77,3 +77,9 @@ DM(
     
 ![png](results_files/results_9_1.png)
     
+
+# License
+
+All source code is made available under a GNU AFFERO GENERAL PUBLIC LICENSE Version 3 license. You can freely
+use and modify the code, without warranty, so long as you provide attribution
+to the authors. See `LICENSE.md` for the full license text.
