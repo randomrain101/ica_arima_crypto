@@ -11,6 +11,7 @@ from scipy.stats import pearsonr
 
 # git clone https://github.com/jeslago/epftoolbox.git && cd epftoolbox && pip install .
 from  epftoolbox.evaluation import DM
+from dieboldmariano import dm_test
 
 
 def warn(*args, **kwargs):
@@ -49,6 +50,9 @@ df_ret = df_close.pct_change().fillna(0).loc[df_arma_pred.index, df_arma_pred.co
 df_ica_pred = df_ica_pred.unstack()
 df_arma_pred = df_arma_pred.unstack()
 
+#%%
+# rescale ica preds
+df_ica_pred *= df_arma_pred.var() / df_ica_pred.var()
 
 # %% [markdown]
 #  # Empirical Results
@@ -67,12 +71,12 @@ pearsonr(df_ret, df_ica_pred, alternative="greater"), \
 
 #%%
 print("Diebold Mariano p-value:",
-DM(
-    np.sign(df_ret).values.reshape(-1, 2),
-    np.sign(df_arma_pred).values.reshape(-1, 2),
-    np.sign(df_ica_pred).values.reshape(-1, 2),
-    norm=1,
-    version="multivariate"))
+dm_test(
+    np.sign(df_ret).values,
+    np.sign(df_ica_pred).values,
+    np.sign(df_arma_pred).values,
+    loss=lambda a, b: abs(a - b),
+    one_sided=True))
 
 
 # %% [markdown]
@@ -82,12 +86,12 @@ DM(
 # %%
 #%%
 print("Diebold Mariano p-value:",
-DM(
-    df_ret.values.reshape(-1, 2),
-    df_arma_pred.values.reshape(-1, 2),
-    df_ica_pred.values.reshape(-1, 2),
-    norm=1,
-    version="multivariate"))
+dm_test(
+    df_ret.values,
+    df_ica_pred.values,
+    df_arma_pred.values,
+    loss=lambda a, b: abs(a - b),
+    one_sided=True))
 
 
 # %%
@@ -97,12 +101,12 @@ DM(
 
 #%%
 print("Diebold Mariano p-value:",
-DM(
-    df_ret.values.reshape(-1, 2),
-    df_arma_pred.values.reshape(-1, 2),
-    df_ica_pred.values.reshape(-1, 2),
-    norm=2,
-    version="multivariate"))
+dm_test(
+    df_ret.values,
+    df_ica_pred.values,
+    df_arma_pred.values,
+    loss=lambda a, b: (a - b)**2,
+    one_sided=True))
 
 # %% [markdown]
 # ## Comaparison of ARIMA orders
