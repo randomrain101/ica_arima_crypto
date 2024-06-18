@@ -12,3 +12,4 @@ __pycache__
 !/data/ica_arma_orders_24h_120D.csv
 !/data/arma_orders_24h_120D.csv
 !/data/ohlc_1d_gateio.csv
+!/data/close_1d_gateio.csv
