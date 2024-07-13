@@ -8,9 +8,6 @@ import pandas as pd
 from scipy.stats import ttest_1samp, ttest_ind
 from scipy.stats import pearsonr
 
-
-# git clone https://github.com/jeslago/epftoolbox.git && cd epftoolbox && pip install .
-from  epftoolbox.evaluation import DM
 from dieboldmariano import dm_test
 
 
@@ -50,8 +47,7 @@ df_ret = df_close.pct_change().fillna(0).loc[df_arma_pred.index, df_arma_pred.co
 df_ica_pred = df_ica_pred.unstack()
 df_arma_pred = df_arma_pred.unstack()
 
-#%%
-# rescale ica preds
+# scale ica preds with scalar
 df_ica_pred *= df_arma_pred.var() / df_ica_pred.var()
 
 # %% [markdown]
@@ -70,7 +66,7 @@ pearsonr(df_ret, df_ica_pred, alternative="greater"), \
 # - Diebold Mariano test shows **Directional Accuarcy** (correct sign of returns predicted) for ica_arima significantly **better** than arima
 
 #%%
-print("Diebold Mariano p-value:",
+print("Diebold Mariano test statistic, p-value:",
 dm_test(
     np.sign(df_ret).values,
     np.sign(df_ica_pred).values,
@@ -81,11 +77,11 @@ dm_test(
 
 # %% [markdown]
 # ## Mean Absolute Error
-# - Diebold Mariano test shows **Mean Absolute Error** of ica_arima predicitons significantly **worse** than arima
+# - Diebold Mariano test shows **Mean Absolute Error** of ica_arima predicitons significantly **better** than arima
 
 # %%
 #%%
-print("Diebold Mariano p-value:",
+print("Diebold Mariano test statistic, p-value:",
 dm_test(
     df_ret.values,
     df_ica_pred.values,
@@ -97,10 +93,10 @@ dm_test(
 # %%
 # %% [markdown]
 # ## Mean Squared Error
-# - Diebold Mariano test shows **Mean Squared Error** of ica_arima predicitons significantly **worse** than arima
+# - Diebold Mariano test shows **Mean Squared Error** of ica_arima predicitons significantly **better** than arima
 
 #%%
-print("Diebold Mariano p-value:",
+print("Diebold Mariano test statistic, p-value:",
 dm_test(
     df_ret.values,
     df_ica_pred.values,
@@ -126,6 +122,7 @@ orders = pd.concat((
 orders.iloc[np.argsort(orders.sum(axis=1))[:-30:-1]].plot.bar(figsize=(15, 5))
 plt.xlabel("ARIMA order (p, d, q)")
 plt.ylabel("count")
+plt.show();
 
 # %% [markdown]
 #  ### Source paper
