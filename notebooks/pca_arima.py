@@ -17,17 +17,16 @@ import warnings
 warnings.warn = warn
 
 from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import FastICA
+from sklearn.decomposition import PCA, FastICA
 from sklearn.model_selection import TimeSeriesSplit
 
 
-def fit_predict_ica_arima(X, ica_kwargs, n_periods=1, standard_order=(2, 0, 0)):
+def fit_predict_pca_arima(X, n_periods=1, standard_order=(2, 0, 0)):
     sc = StandardScaler().fit(X)
     X_norm = sc.transform(X)
-    w_init = np.corrcoef(X_norm.T)
-    ica = FastICA(**ica_kwargs, w_init=w_init, algorithm="deflation").fit(X_norm)
-    #ica = FastICA(max_iter=200).fit(X_norm)
-    X_trans = pd.DataFrame(ica.transform(X_norm), index=X.index)
+    pca = PCA().fit(X_norm)
+    #pca = FastICA(max_iter=1000, fun="exp", w_init=np.corrcoef(X_norm.T), algorithm="deflation").fit(X_norm)
+    X_trans = pd.DataFrame(pca.transform(X_norm), index=X.index)
     pred_list = []
     order_list = []
     root_list = []
@@ -57,8 +56,8 @@ def fit_predict_ica_arima(X, ica_kwargs, n_periods=1, standard_order=(2, 0, 0)):
         order_list.append(aa_order)
         pred_list.append(model.predict(n_periods))
     
-    out = sc.inverse_transform(ica.inverse_transform(pd.concat(pred_list, axis=1)))
-    return pd.DataFrame(out, index=pred_list[0].index, columns=X.columns), order_list, root_list, ica
+    out = sc.inverse_transform(pca.inverse_transform(pd.concat(pred_list, axis=1)))
+    return pd.DataFrame(out, index=pred_list[0].index, columns=X.columns), order_list, root_list, pca
     
 # %%
 tick = "15m"
@@ -79,33 +78,31 @@ ts_split = list(TimeSeriesSplit(
     max_train_size=n_train_days, 
     test_size=1).split(df_close))
 
-#%%
-ica_kwargs = {
-        "fun": "exp",
-        "max_iter": 1000
-    }
-
+df_log_ret = np.log(1+df_close.pct_change()).iloc[1:]
 
 #%%
-ica_arma_predictions, ica_orders, ica_roots, ica_list = zip(*Parallel(n_jobs=-1, backend="loky")(
-        delayed(fit_predict_ica_arima)(df_close.iloc[i_train], ica_kwargs) for i_train, _ in tqdm(ts_split)))
+#pca_arma_predictions, pca_orders, pca_roots, pca_list = zip(*Parallel(n_jobs=-1, backend="loky")(
+#        delayed(fit_predict_pca_arima)(df_close.iloc[i_train]) for i_train, _ in tqdm(ts_split)))
+
+pca_arma_predictions, pca_orders, pca_roots, pca_list = zip(*Parallel(n_jobs=-1, backend="loky")(
+        delayed(fit_predict_pca_arima)(df_log_ret.iloc[i_train]) for i_train, _ in tqdm(ts_split)))
 
 #%%
-df_ica_pred = pd.concat(ica_arma_predictions)
-df_ica_pred = (df_ica_pred / df_close.shift()).reindex(df_ica_pred.index) - 1
+df_pca_pred = np.exp(pd.concat(pca_arma_predictions)) - 1
+#df_pca_pred = (df_pca_pred / df_close.shift().reindex(df_pca_pred.index)) - 1
 
-df_ica_pred.hist(bins=50, figsize=(10, 10));
+df_pca_pred.hist(bins=50, figsize=(10, 10));
 
 #%%
-df_ica_pred.to_csv(f"../data/ica_arma_predictions_{tick}_{n_train_days}D.csv")
+df_pca_pred.to_csv(f"../data/pca_arma_predictions_{tick}_{n_train_days}D.csv")
 
 # %%
-ica_orders = pd.DataFrame(ica_orders, columns=df_close.columns)
+pca_orders = pd.DataFrame(pca_orders, columns=df_close.columns)
 
 #%%
-ica_orders.to_csv(f"../data/ica_arma_orders_{tick}_{n_train_days}D.csv")
+pca_orders.to_csv(f"../data/pca_arma_orders_{tick}_{n_train_days}D.csv")
 
 #%%
-dump(ica_roots, "../data/ica_roots.joblib")
+dump(pca_roots, "../data/pca_roots.joblib")
 
 #%%

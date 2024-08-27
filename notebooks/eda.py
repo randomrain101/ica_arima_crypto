@@ -47,6 +47,7 @@ ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.125),
 plt.savefig('prices.png', bbox_inches="tight")
 
 # %%
+df_log_ret = np.log(df_close).diff()
 heatmap = sns.heatmap(df_ret.corr(), vmin=-1, vmax=1, annot=True)
 heatmap.set_title('Correlation Heatmap', fontdict={'fontsize':12}, pad=12);
 
