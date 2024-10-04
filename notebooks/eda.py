@@ -5,6 +5,46 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from scipy.stats import skew, kurtosis
+from statsmodels.stats.stattools import jarque_bera
+
+def summary_statistics(df):
+    # Dictionary to hold summary statistics for each column
+    summary_dict = {
+        'Mean': [],
+        'Variance': [],
+        'Skewness': [],
+        'Kurtosis': [],
+        'Jarque-Bera': [],
+        'p-value': []
+    }
+
+    # Iterate over each column in the DataFrame
+    for col in df.columns:
+        data = df[col].dropna()  # Drop NaN values
+
+        # Calculate first to fourth moments
+        mean = data.mean()
+        variance = data.var()
+        skewness = skew(data)
+        kurt = kurtosis(data, fisher=False)  # Fisher=False for population kurtosis (i.e., including +3)
+
+        # Perform Jarque-Bera test
+        jb_stat, jb_pvalue, _, _ = jarque_bera(data)
+
+        # Append results to dictionary
+        summary_dict['Mean'].append(mean)
+        summary_dict['Variance'].append(variance)
+        summary_dict['Skewness'].append(skewness)
+        summary_dict['Kurtosis'].append(kurt)
+        summary_dict['Jarque-Bera'].append(jb_stat)
+        summary_dict['p-value'].append(jb_pvalue)
+
+    # Create summary statistics DataFrame
+    summary_df = pd.DataFrame(summary_dict, index=df.columns)
+    
+    return summary_df
+
 # %%
 tick = "1d"
 
@@ -51,4 +91,13 @@ df_log_ret = np.log(df_close).diff()
 heatmap = sns.heatmap(df_ret.corr(), vmin=-1, vmax=1, annot=True)
 heatmap.set_title('Correlation Heatmap', fontdict={'fontsize':12}, pad=12);
 
+
 # %%
+# Get summary statistics
+summary_df = summary_statistics(df_log_ret)
+
+# Print the summary statistics table
+print(summary_df)
+
+# %%
+summary_df.to_latex()

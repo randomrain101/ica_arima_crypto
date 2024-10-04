@@ -36,6 +36,10 @@ df_ica_pred = pd.read_csv(
     f"../data/ica_arma_predictions_{tick}_{n_train_days}D.csv",
     index_col=0,
     parse_dates=True)
+df_pca_pred = pd.read_csv(
+    f"../data/pca_arma_predictions_{tick}_{n_train_days}D.csv",
+    index_col=0,
+    parse_dates=True)#.shift(-1).dropna()
 df_arma_pred = pd.read_csv(
     f"../data/arma_predictions_{tick}_{n_train_days}D.csv",
     index_col=0,
@@ -46,9 +50,10 @@ df_ret = df_close.pct_change().fillna(0).loc[df_arma_pred.index, df_arma_pred.co
 
 df_ica_pred = df_ica_pred.unstack()
 df_arma_pred = df_arma_pred.unstack()
+df_pca_pred = df_pca_pred.unstack()
 
 # scale ica preds with scalar
-df_ica_pred *= df_arma_pred.var() / df_ica_pred.var()
+df_ica_pred *= df_pca_pred.var() / df_ica_pred.var()
 
 # %% [markdown]
 #  # Empirical Results

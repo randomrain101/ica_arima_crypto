@@ -37,6 +37,11 @@ df_ica_pred = pd.read_csv(
     index_col=0,
     parse_dates=True)
 
+df_arima_pred = pd.read_csv(
+    f"../data/arma_predictions_{tick}_{n_train_days}D.csv",
+    index_col=0,
+    parse_dates=True)
+
 df_pca_pred = pd.read_csv(
     f"../data/pca_arma_predictions_{tick}_{n_train_days}D.csv",
     index_col=0,
@@ -46,6 +51,7 @@ df_ret = df_close.pct_change().fillna(0).loc[df_pca_pred.index, df_pca_pred.colu
 
 df_pca_pred = df_pca_pred.iloc[:-1].unstack()
 df_ica_pred = df_ica_pred.iloc[1:].unstack()
+df_arima_pred = df_arima_pred.unstack()
 
 df_ret = df_ret.reindex(df_ica_pred.index)
 
@@ -126,10 +132,11 @@ orders = pd.concat((
     ica_orders.unstack().value_counts().rename("ica_arima_orders"),
     pca_arima_orders.unstack().value_counts().rename("pca_arima_orders"),
     arima_orders.unstack().value_counts().rename("arima_orders")
-    ), axis=1, join="inner")
+    ), axis=1, join="outer")
 
-#orders.iloc[np.argsort(orders.sum(axis=1))[:-30:-1]].plot.bar(figsize=(15, 5))
-orders.iloc[np.argsort(orders.sum(axis=1))[::-1]].plot.bar(figsize=(15, 5))
+orders.iloc[np.argsort(orders.sum(axis=1))[:-15:-1]].plot.bar(figsize=(15, 5))
+#orders.iloc[np.argsort(orders["arima_orders"].values)[:-30:-1]].plot.bar(figsize=(15, 5))
+#orders.iloc[np.argsort(orders.sum(axis=1))[::-1]].plot.bar(figsize=(15, 5))
 plt.xlabel("ARIMA order (p, d, q)")
 plt.ylabel("count")
 plt.show();
@@ -160,3 +167,9 @@ ttest_ind(
     alternative="less")
 
 #%%
+np.abs(np.sign(df_ret) - np.sign(df_ica_pred)).sum() / (2*len(df_ret)), \
+np.abs(np.sign(df_ret) - np.sign(df_pca_pred)).sum() / (2*len(df_ret))
+
+#%%
+((df_ica_pred - df_ret)**2).values.sum() / len(df_ret), \
+((df_pca_pred - df_ret)**2).values.sum() / len(df_ret)

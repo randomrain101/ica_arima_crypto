@@ -20,9 +20,9 @@ df = pd.DataFrame([s1, s2, s3]).T
 df.plot(figsize=(15, 5))
 
 #%%
-for std in [0, 0.1, 0.2, 0.5]:
+for std in [0, 0.1, 0.2, 0.5, 1.0]:
     S = np.c_[s1, s2, s3]
-    S += std * np.random.normal(size=S.shape)  # Add noise
+    #S += std * np.random.normal(size=S.shape)  # Add noise
 
     #print(np.corrcoef(S).mean())
 
@@ -30,10 +30,13 @@ for std in [0, 0.1, 0.2, 0.5]:
     # Mix data
     A = np.array([[1, 1, 1], [0.5, 2, 1.0], [1.5, 1.0, 2.0]])  # Mixing matrix
     X = np.dot(S, A.T)  # Generate observations
-    S += std * np.random.normal(size=S.shape)  # Add noise
+    X += std * np.random.normal(size=S.shape)  # Add noise
+
+    print(np.corrcoef(X).mean())
 
     ica = FastICA().fit(X)
     df_unmixed = pd.DataFrame(ica.transform(X))
+    #print(df_unmixed.corr().mean())
     pd.DataFrame(S).plot(figsize=(15, 5))
     plt.show()
     df_unmixed.plot(figsize=(15, 5))
