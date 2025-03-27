@@ -1,94 +1,28 @@
-  # Empirical Results
-  ## R (Pearson Correlation)
- - **Pearson Correlation** of ica_arima **better** than just arima
+# Forecasting the Unforecastable: An Independent Component Analysis for Majority Game-Like Global Cryptocurrencies
 
+[![DOI](https://doi.org/10.1016/j.physa.2025.130472)](https://doi.org/10.1016/j.physa.2025.130472)
 
-```python
-# %%
+## Overview
+This repository contains the code and supplementary materials for the research paper:
 
-pearsonr(df_ret, df_ica_pred, alternative="greater"), \
-    pearsonr(df_ret, df_arma_pred, alternative="greater")
+**"Forecasting the Unforecastable: An Independent Component Analysis for Majority Game-Like Global Cryptocurrencies"** by Oliver Kirsten and Bernd Süssmuth.
+
+### Abstract
+Cryptocurrencies do not have proper economic fundamentals. Consequently, economic variables cannot predict crypto prices. According to economic theory, cryptocurrencies are unbacked assets that are inherently unforecastable. However, a growing strand of literature suggests global crypto markets to be informationally inefficient. It implies the possibility of return predictability based on past information. Forecasting the allegedly unforecastable becomes feasible. Keeping it sophisticatedly simple, past infomation can be captured by autoregressive integrated moving average (ARIMA) processes of principal components. However, Principal Component Analysis (PCA) for crypto price series is due to their non-Gaussian property not applicable and requires the assumption of a stochastic trend model. Making use of the Central Limit Theorem, Independent Component Analysis (ICA) overcomes this deficiency. We show that ICA combined with ARIMA modeling more than triples the predictability of global crypto price dynamics.
+
+## Citation
+If you use this code in your research, please cite:
+```bibtex
+@article{kirsten2025forecasting,
+  title={Forecasting the unforecastable: An independent component analysis for majority game-like global cryptocurrencies},
+  author={Kirsten, Oliver and S{\"u}ssmuth, Bernd},
+  journal={Physica A: Statistical Mechanics and its Applications},
+  pages={130472},
+  year={2025},
+  publisher={Elsevier}
+}
+
 ```
 
-
-
-
-    (PearsonRResult(statistic=0.01340416190293595, pvalue=0.0630091125365575),
-     PearsonRResult(statistic=0.005678315103859606, pvalue=0.2584545828881826))
-
- ## Directional accuracy
- - Diebold Mariano test shows **Directional Accuarcy** (correct sign of returns predicted) for ica_arima significantly **better** than arima
-
-```python
-#%%
-
-print("Diebold Mariano test statistic, p-value:",
-dm_test(
-    np.sign(df_ret).values,
-    np.sign(df_ica_pred).values,
-    np.sign(df_arma_pred).values,
-    loss=lambda a, b: abs(a - b),
-    one_sided=True))
-```
-
-    Diebold Mariano test statistic, p-value: (-1.1580454616279916, 0.12343335583198067)
-
- ## Mean Absolute Error
- - Diebold Mariano test shows **Mean Absolute Error** of ica_arima predicitons significantly **better** than arima
-
-
-```python
-#%%
-
-print("Diebold Mariano test statistic, p-value:",
-dm_test(
-    df_ret.values,
-    df_ica_pred.values,
-    df_arma_pred.values,
-    loss=lambda a, b: abs(a - b),
-    one_sided=True))
-```
-
-    Diebold Mariano test statistic, p-value: (-10.756302880194324, 3.5880904215227915e-27)
-
- ## Mean Squared Error
- - Diebold Mariano test shows **Mean Squared Error** of ica_arima predicitons significantly **better** than arima
-
-
-```python
-#%%
-
-print("Diebold Mariano test statistic, p-value:",
-dm_test(
-    df_ret.values,
-    df_ica_pred.values,
-    df_arma_pred.values,
-    loss=lambda a, b: (a - b)**2,
-    one_sided=True))
-```
-
-    Diebold Mariano test statistic, p-value: (-6.523036238661388, 3.572181247611614e-11)
-
- ## Comaparison of ARIMA orders
- - for just ARIMA the AutoARIMA algorithm determined Brownian Noise with order (0, 1, 0) to be the best model of the process
- way more often than for ica + ARIMA, indicating application of ICA improved the Signal to Noise Ratio
-
-
-```python
-#%%
-
-n_train_days = 120
-tick = "24h"
-ica_orders = pd.read_csv(f"../data/ica_arma_orders_{tick}_{n_train_days}D.csv", index_col=0)
-arima_orders = pd.read_csv(f"../data/arma_orders_{tick}_{n_train_days}D.csv", index_col=0)
-orders = pd.concat((
-    ica_orders.unstack().value_counts().rename("ica_arima_orders"),
-    arima_orders.unstack().value_counts().rename("arima_orders")
-    ), axis=1, join="inner")
-
-orders.iloc[np.argsort(orders.sum(axis=1))[:-30:-1]].plot.bar(figsize=(15, 5))
-plt.xlabel("ARIMA order (p, d, q)")
-plt.ylabel("count")
-```
-    
-![png](results_files/results_9_1.png)
+## License
+This project is licensed under the Creative Commons License as per the original research publication.
