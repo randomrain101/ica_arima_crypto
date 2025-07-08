@@ -10,6 +10,9 @@ from scipy.stats import pearsonr
 
 from dieboldmariano import dm_test
 
+from sklearn.metrics import r2_score
+from sklearn.metrics import cohen_kappa_score
+
 
 def warn(*args, **kwargs):
     pass
@@ -66,18 +69,10 @@ naive_forecast = df_ret.shift().fillna(0)
 # %% [markdown]
 #  # Empirical Results
 
-#  ## R (Pearson Correlation)
-# - **Pearson Correlation** of ica_arima **better** than just arima
-
-# %%
-pearsonr(df_ret, df_ica_pred, alternative="greater"), \
-    pearsonr(df_ret, df_pca_pred, alternative="greater"), \
-        pearsonr(df_ret, naive_forecast, alternative="greater")
-
 
 # %% [markdown]
 # ## Directional accuracy
-# - Diebold Mariano test shows **Directional Accuarcy** (correct sign of returns predicted) for ica_arima significantly **better** than arima
+# - Diebold Mariano test shows **Directional Accuarcy** (correct sign of returns predicted) for ica_arima significantly **better** than pca + arima
 
 #%%
 print("Diebold Mariano test statistic, p-value:",
@@ -88,10 +83,58 @@ dm_test(
     loss=lambda a, b: abs(a - b),
     one_sided=True))
 
+#%%
+# Convert continuous predictions to directional predictions (+1 for positive, -1 for negative)
+actual_direction = np.sign(df_ret).values
+ica_direction = np.sign(df_ica_pred).values
+pca_direction = np.sign(df_pca_pred).values
+naive_direction = np.sign(naive_forecast).values
+
+# Calculate Cohen's Kappa for all models
+ica_kappa = cohen_kappa_score(actual_direction, ica_direction)
+pca_kappa = cohen_kappa_score(actual_direction, pca_direction)
+naive_kappa = cohen_kappa_score(actual_direction, naive_direction)
+
+print(f"Cohen's Kappa - ICA ARIMA: {ica_kappa:.4f}")
+print(f"Cohen's Kappa - PCA ARIMA: {pca_kappa:.4f}")
+print(f"Cohen's Kappa - Naive Forecast: {naive_kappa:.4f}")
+
+#%%
+ica_directional_error = np.abs(np.sign(df_ret).values - np.sign(df_ica_pred).values).sum() / (2 * len(df_ret))
+print(f"ICA ARIMA Directional Error: {ica_directional_error:.4f}")
+
+pca_directional_error = np.abs(np.sign(df_ret).values - np.sign(df_pca_pred).values).sum() / (2 * len(df_ret))
+print(f"PCA ARIMA Directional Error: {pca_directional_error:.4f}")
+
+naive_directional_error = np.abs(np.sign(df_ret).values - np.sign(naive_forecast).values).sum() / (2 * len(df_ret))
+print(f"Naive Forecast Directional Error: {naive_directional_error:.4f}")
+
+# %% [markdown]
+#  ## $R^2$ (Explained Variance)
+# - **Explained Variance** of ica_arima **better** than just pca + arima
+
+#%%
+print(f"R² Score - ICA ARIMA: {r2_score(df_ret, df_ica_pred):.4f}")
+print(f"R² Score - PCA ARIMA: {r2_score(df_ret, df_pca_pred):.4f}")
+print(f"R² Score - Naive Forecast: {r2_score(df_ret, naive_forecast):.4f}")
+
+# %% [markdown]
+#  ## R (Pearson Correlation)
+# - **Pearson Correlation** of ica_arima **worse** than pca + arima
+
+# %%
+ica_corr, ica_p = pearsonr(df_ret, df_ica_pred, alternative="greater")
+pca_corr, pca_p = pearsonr(df_ret, df_pca_pred, alternative="greater")
+naive_corr, naive_p = pearsonr(df_ret, naive_forecast, alternative="greater")
+
+print(f"Pearson Correlation - ICA ARIMA: {ica_corr:.4f} (p-value: {ica_p:.4f})")
+print(f"Pearson Correlation - PCA ARIMA: {pca_corr:.4f} (p-value: {pca_p:.4f})")
+print(f"Pearson Correlation - Naive Forecast: {naive_corr:.4f} (p-value: {naive_p:.4f})")
+
 
 # %% [markdown]
 # ## Mean Absolute Error
-# - Diebold Mariano test shows **Mean Absolute Error** of ica_arima predicitons significantly **better** than arima
+# - Diebold Mariano test shows **Mean Absolute Error** of ica_arima predicitons significantly **better** than pca + arima
 
 #%%
 print("Diebold Mariano test statistic, p-value:",
@@ -102,11 +145,21 @@ dm_test(
     loss=lambda a, b: abs(a - b),
     one_sided=True))
 
+#%%
+ica_mae_error = np.abs(df_ret.values - df_ica_pred.values).sum() / len(df_ret)
+print(f"ICA ARIMA MAE: {round(float(ica_mae_error), 4)}")
+
+pca_mae_error = np.abs(df_ret.values - df_pca_pred.values).sum() / len(df_ret)
+print(f"PCA ARIMA MAE: {round(float(pca_mae_error), 4)}")
+
+naive_mae_error = np.abs(df_ret.values - naive_forecast.values).sum() / len(df_ret)
+print(f"Naive Forecast MAE: {round(float(naive_mae_error), 4)}")
+
 
 # %%
 # %% [markdown]
 # ## Mean Squared Error
-# - Diebold Mariano test shows **Mean Squared Error** of ica_arima predicitons significantly **better** than arima
+# - Diebold Mariano test shows **Mean Squared Error** of ica_arima predicitons significantly **better** than pca + arima
 
 #%%
 print("Diebold Mariano test statistic, p-value:",
@@ -116,6 +169,16 @@ dm_test(
     df_pca_pred.values,
     loss=lambda a, b: (a - b)**2,
     one_sided=True))
+
+#%%
+ica_mse_error = ((df_ret.values - df_ica_pred.values)**2).sum() / len(df_ret)
+print(f"ICA ARIMA MSE: {round(float(ica_mse_error), 4)}")
+
+pca_mse_error = ((df_ret.values - df_pca_pred.values)**2).sum() / len(df_ret)
+print(f"PCA ARIMA MSE: {round(float(pca_mse_error), 4)}")
+
+naive_mse_error = ((df_ret.values - naive_forecast.values)**2).sum() / len(df_ret)
+print(f"Naive Forecast MSE: {round(float(naive_mse_error), 4)}")
 
 # %% [markdown]
 # ## Comaparison of ARIMA orders
@@ -141,35 +204,4 @@ plt.xlabel("ARIMA order (p, d, q)")
 plt.ylabel("count")
 plt.show();
 
-# %% [markdown]
-#  ### Source paper
-# Oja, Erkki, Kimmo Kiviluoto, and Simona Malaroiu. "Independent component analysis for financial time series." Proceedings of the IEEE 2000 Adaptive Systems for Signal Processing, Communications, and Control Symposium (Cat. No. 00EX373). IEEE, 2000.
-# [doi.org/10.1109/ASSPCC.2000.882456](https://doi.org/10.1109/ASSPCC.2000.882456)
-
-
-
 #%%
-ttest_ind(
-    (np.sign(df_ret) == np.sign(df_ica_pred)),
-    (np.sign(df_ret) == np.sign(df_pca_pred)),
-    alternative="greater")
-
-#%%
-ttest_ind(
-    ((df_ret - df_ica_pred)**2).values,
-    ((df_ret - df_pca_pred)**2).values,
-    alternative="less")
-
-#%%
-ttest_ind(
-    (df_ica_pred - df_ret).abs().values, 
-    (df_pca_pred - df_ret).abs().values,
-    alternative="less")
-
-#%%
-np.abs(np.sign(df_ret) - np.sign(df_ica_pred)).sum() / (2*len(df_ret)), \
-np.abs(np.sign(df_ret) - np.sign(df_pca_pred)).sum() / (2*len(df_ret))
-
-#%%
-((df_ica_pred - df_ret)**2).values.sum() / len(df_ret), \
-((df_pca_pred - df_ret)**2).values.sum() / len(df_ret)
